@@ -11,21 +11,54 @@ import CoreData
 
 class MasterViewController: UITableViewController, NSFetchedResultsControllerDelegate {
 
+    var cache: NSCache<AnyObject, AnyObject>!
+
     var detailViewController: DetailViewController? = nil
     var managedObjectContext: NSManagedObjectContext? = nil
-
+    var networking: Networking = Networking()
+    var articles : [Article] = []
+    var nextPage: String = ""
 
     override func viewDidLoad() {
         super.viewDidLoad()
-        // Do any additional setup after loading the view.
-        navigationItem.leftBarButtonItem = editButtonItem
 
-        let addButton = UIBarButtonItem(barButtonSystemItem: .add, target: self, action: #selector(insertNewObject(_:)))
-        navigationItem.rightBarButtonItem = addButton
+        self.cache = NSCache()
+
+        tableView.register(UINib(nibName: "DetailCell", bundle: nil), forCellReuseIdentifier: "DetailCell")
+
         if let split = splitViewController {
             let controllers = split.viewControllers
             detailViewController = (controllers[controllers.count-1] as! UINavigationController).topViewController as? DetailViewController
         }
+
+        networking.getTopPost(after: "") { articlesData in
+            self.articles = articlesData.children
+            if let after = articlesData.after {
+                self.nextPage = after
+            }
+            DispatchQueue.main.async {
+                self.tableView.reloadData()
+            }
+        }
+
+        let refreshControl = UIRefreshControl()
+        refreshControl.addTarget(self, action: #selector(self.handleRefresh(_:)), for: UIControl.Event.valueChanged)
+        refreshControl.tintColor = .white
+
+        tableView.addSubview(refreshControl)
+    }
+
+    @objc private func handleRefresh(_ refreshControl: UIRefreshControl) {
+        networking.getTopPost(after: "") { articlesData in
+            self.articles = articlesData.children
+            if let after = articlesData.after {
+                self.nextPage = after
+            }
+            DispatchQueue.main.async {
+                self.tableView.reloadData()
+            }
+        }
+        refreshControl.endRefreshing()
     }
 
     override func viewWillAppear(_ animated: Bool) {
@@ -55,34 +88,86 @@ class MasterViewController: UITableViewController, NSFetchedResultsControllerDel
     // MARK: - Segues
 
     override func prepare(for segue: UIStoryboardSegue, sender: Any?) {
+//        if segue.identifier == "showDetail" {
+//            if let indexPath = tableView.indexPathForSelectedRow {
+//            let object = fetchedResultsController.object(at: indexPath)
+//                let controller = (segue.destination as! UINavigationController).topViewController as! DetailViewController
+//                controller.articleData = object
+//                controller.navigationItem.leftBarButtonItem = splitViewController?.displayModeButtonItem
+//                controller.navigationItem.leftItemsSupplementBackButton = true
+//                detailViewController = controller
+//            }
+//        }
         if segue.identifier == "showDetail" {
             if let indexPath = tableView.indexPathForSelectedRow {
-            let object = fetchedResultsController.object(at: indexPath)
+                let object = articles[indexPath.row]
                 let controller = (segue.destination as! UINavigationController).topViewController as! DetailViewController
-                controller.detailItem = object
+                controller.articleData = object.data
                 controller.navigationItem.leftBarButtonItem = splitViewController?.displayModeButtonItem
                 controller.navigationItem.leftItemsSupplementBackButton = true
-                detailViewController = controller
+                tableView.deselectRow(at: indexPath, animated: false)
             }
         }
     }
 
     // MARK: - Table View
+    override func tableView(_ tableView: UITableView, heightForRowAt indexPath: IndexPath) -> CGFloat {
+        return 160
+    }
 
     override func numberOfSections(in tableView: UITableView) -> Int {
-        return fetchedResultsController.sections?.count ?? 0
+        //return fetchedResultsController.sections?.count ?? 0
+
+        return 1
     }
 
     override func tableView(_ tableView: UITableView, numberOfRowsInSection section: Int) -> Int {
-        let sectionInfo = fetchedResultsController.sections![section]
-        return sectionInfo.numberOfObjects
+//        let sectionInfo = fetchedResultsController.sections![section]
+//        return sectionInfo.numberOfObjects
+        return articles.count
     }
 
     override func tableView(_ tableView: UITableView, cellForRowAt indexPath: IndexPath) -> UITableViewCell {
-        let cell = tableView.dequeueReusableCell(withIdentifier: "Cell", for: indexPath)
-        let event = fetchedResultsController.object(at: indexPath)
-        configureCell(cell, withEvent: event)
+//        let cell = tableView.dequeueReusableCell(withIdentifier: "Cell", for: indexPath)
+//        let event = fetchedResultsController.object(at: indexPath)
+//        configureCell(cell, withEvent: event)
+//        return cell
+
+        let cell = tableView.dequeueReusableCell(withIdentifier: "DetailCell", for: indexPath) as! DetailCell
+
+        let object = articles[indexPath.row].data
+        
+        cell.title.text = object.title
+        if let numComments = object.numComments {
+            cell.comments.text = String.init(format: NSLocalizedString("%d comments", comment: ""), numComments)
+        }
+
+        if let dateCreated = object.createdUTC {
+            cell.created.text = DateFormatter().timeSince(from: NSDate(timeIntervalSince1970: TimeInterval(dateCreated)))
+        }
+
+        cell.author.text = object.author
+
+        if let imageUrl = object.thumbnail {
+            if (self.cache.object(forKey: imageUrl as AnyObject) != nil) {
+                cell.articleImage.image = self.cache.object(forKey: imageUrl as AnyObject) as? UIImage
+            } else {
+                networking.loadImage(image: imageUrl) { image in
+                    DispatchQueue.main.async {
+                        cell.articleImage.image = image
+                        self.cache.setObject(image, forKey: imageUrl as AnyObject)
+                    }
+                }
+            }
+        } else {
+            cell.articleImage.image = UIImage(named: "NoImage")
+        }
+
         return cell
+    }
+
+    override func tableView(_ tableView: UITableView, didSelectRowAt indexPath: IndexPath) {
+        self.performSegue(withIdentifier: "showDetail", sender: indexPath);
     }
 
     override func tableView(_ tableView: UITableView, canEditRowAt indexPath: IndexPath) -> Bool {
