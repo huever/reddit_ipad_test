@@ -18,6 +18,8 @@ class DetailViewController: UIViewController {
     var networking: Networking = Networking()
     var articleData: ArticleData?
 
+
+
 //    func configureView() {
         // Update the user interface for the detail item.
 //        if let detail = detailItem {
@@ -29,6 +31,7 @@ class DetailViewController: UIViewController {
 
     func configureView() {
         // Update the user interface for the detail item.
+        title = ""
         self.articleAuthor.text = articleData?.author
         self.articleTitle.text = articleData?.title
         if let image = articleData?.url {
@@ -40,7 +43,6 @@ class DetailViewController: UIViewController {
         } else {
             self.articleImage.image = UIImage(named: "NoImage")
         }
-
     }
 
     override func viewDidLoad() {

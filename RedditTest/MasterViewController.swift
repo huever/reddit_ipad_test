@@ -11,19 +11,18 @@ import CoreData
 
 class MasterViewController: UITableViewController, NSFetchedResultsControllerDelegate {
 
-    var cache: NSCache<AnyObject, AnyObject>!
-
     var detailViewController: DetailViewController? = nil
     var managedObjectContext: NSManagedObjectContext? = nil
     var networking: Networking = Networking()
     var articles : [Article] = []
     var nextPage: String = ""
 
+    // MARK: Life Cycle
+
     override func viewDidLoad() {
         super.viewDidLoad()
 
-        self.cache = NSCache()
-
+        title = "Top posts"
         tableView.register(UINib(nibName: "DetailCell", bundle: nil), forCellReuseIdentifier: "DetailCell")
 
         if let split = splitViewController {
@@ -48,26 +47,12 @@ class MasterViewController: UITableViewController, NSFetchedResultsControllerDel
         tableView.addSubview(refreshControl)
     }
 
-    @objc private func handleRefresh(_ refreshControl: UIRefreshControl) {
-        networking.getTopPost(after: "") { articlesData in
-            self.articles = articlesData.children
-            if let after = articlesData.after {
-                self.nextPage = after
-            }
-            DispatchQueue.main.async {
-                self.tableView.reloadData()
-            }
-        }
-        refreshControl.endRefreshing()
-    }
-
     override func viewWillAppear(_ animated: Bool) {
         clearsSelectionOnViewWillAppear = splitViewController!.isCollapsed
         super.viewWillAppear(animated)
     }
 
-    @objc
-    func insertNewObject(_ sender: Any) {
+    @objc func insertNewObject(_ sender: Any) {
         let context = self.fetchedResultsController.managedObjectContext
         let newEvent = Event(context: context)
              
@@ -83,6 +68,21 @@ class MasterViewController: UITableViewController, NSFetchedResultsControllerDel
             let nserror = error as NSError
             fatalError("Unresolved error \(nserror), \(nserror.userInfo)")
         }
+    }
+
+    // MARK: Private Methods
+
+    @objc private func handleRefresh(_ refreshControl: UIRefreshControl) {
+        networking.getTopPost(after: "") { articlesData in
+            self.articles = articlesData.children
+            if let after = articlesData.after {
+                self.nextPage = after
+            }
+            DispatchQueue.main.async {
+                self.tableView.reloadData()
+            }
+        }
+        refreshControl.endRefreshing()
     }
 
     // MARK: - Segues
@@ -110,14 +110,14 @@ class MasterViewController: UITableViewController, NSFetchedResultsControllerDel
         }
     }
 
-    // MARK: - Table View
+    // MARK: Table View
+
     override func tableView(_ tableView: UITableView, heightForRowAt indexPath: IndexPath) -> CGFloat {
         return 160
     }
 
     override func numberOfSections(in tableView: UITableView) -> Int {
         //return fetchedResultsController.sections?.count ?? 0
-
         return 1
     }
 
@@ -132,36 +132,10 @@ class MasterViewController: UITableViewController, NSFetchedResultsControllerDel
 //        let event = fetchedResultsController.object(at: indexPath)
 //        configureCell(cell, withEvent: event)
 //        return cell
-
+        let object = articles[indexPath.row].data
         let cell = tableView.dequeueReusableCell(withIdentifier: "DetailCell", for: indexPath) as! DetailCell
 
-        let object = articles[indexPath.row].data
-        
-        cell.title.text = object.title
-        if let numComments = object.numComments {
-            cell.comments.text = String.init(format: NSLocalizedString("%d comments", comment: ""), numComments)
-        }
-
-        if let dateCreated = object.createdUTC {
-            cell.created.text = DateFormatter().timeSince(from: NSDate(timeIntervalSince1970: TimeInterval(dateCreated)))
-        }
-
-        cell.author.text = object.author
-
-        if let imageUrl = object.thumbnail {
-            if (self.cache.object(forKey: imageUrl as AnyObject) != nil) {
-                cell.articleImage.image = self.cache.object(forKey: imageUrl as AnyObject) as? UIImage
-            } else {
-                networking.loadImage(image: imageUrl) { image in
-                    DispatchQueue.main.async {
-                        cell.articleImage.image = image
-                        self.cache.setObject(image, forKey: imageUrl as AnyObject)
-                    }
-                }
-            }
-        } else {
-            cell.articleImage.image = UIImage(named: "NoImage")
-        }
+        cell.viewData = DetailCell.ViewData(data: object)
 
         return cell
     }
@@ -195,7 +169,7 @@ class MasterViewController: UITableViewController, NSFetchedResultsControllerDel
         cell.textLabel!.text = event.timestamp!.description
     }
 
-    // MARK: - Fetched results controller
+    // MARK: Fetched results controller
 
     var fetchedResultsController: NSFetchedResultsController<Event> {
         if _fetchedResultsController != nil {
@@ -265,15 +239,4 @@ class MasterViewController: UITableViewController, NSFetchedResultsControllerDel
     func controllerDidChangeContent(_ controller: NSFetchedResultsController<NSFetchRequestResult>) {
         tableView.endUpdates()
     }
-
-    /*
-     // Implementing the above methods to update the table view in response to individual changes may have performance implications if a large number of changes are made simultaneously. If this proves to be an issue, you can instead just implement controllerDidChangeContent: which notifies the delegate that all section and object changes have been processed.
-     
-     func controllerDidChangeContent(controller: NSFetchedResultsController) {
-         // In the simplest, most efficient, case, reload the table view.
-         tableView.reloadData()
-     }
-     */
-
 }
-
