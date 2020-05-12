@@ -26,7 +26,7 @@ struct Article: Codable {
 
 struct ArticleData: Codable {
     let preview: Preview?
-    let id: String?
+    let id: String
     let author: String?
     let url: String?
     let numComments: Int?

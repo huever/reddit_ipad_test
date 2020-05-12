@@ -6,13 +6,16 @@
 //  Copyright © 2020 Egg. All rights reserved.
 //
 
+import Foundation
+
 // MARK: DetailCell
 
 extension DetailCell.ViewData {
     init(data: ArticleData) {
         let createdStr = DateFormatter().timeSince(from: NSDate(timeIntervalSince1970: TimeInterval(data.createdUTC ?? 0)))
         let commentsStr = String.init(format: NSLocalizedString("%d comments", comment: ""), data.numComments ?? 0)
-        self.init(title: data.title,
+        self.init(id: data.id,
+                  title: data.title,
                   date: createdStr,
                   numberOfComments: commentsStr,
                   author: data.author,

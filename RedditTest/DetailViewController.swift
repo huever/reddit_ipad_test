@@ -10,26 +10,31 @@ import UIKit
 
 class DetailViewController: UIViewController {
 
-    @IBOutlet weak var articleTitle: UILabel!
-    @IBOutlet weak var articleImage: UIImageView!
-    @IBOutlet weak var articleAuthor: UILabel!
-    @IBOutlet weak var backgroundImage: UIImageView!
-
     var networking: Networking = Networking()
     var articleData: ArticleData?
+    
+    // MARK: - Outlets
 
+    @IBOutlet weak var articleTitle: UILabel!
+    @IBOutlet weak var articleImage: UIImageView! {
+        didSet {
+            let longPressGesture = UITapGestureRecognizer(target: self, action: #selector(saveImage(_:)))
+            self.articleImage.addGestureRecognizer(longPressGesture)
+        }
+    }
+    @IBOutlet weak var articleAuthor: UILabel!
 
+    // MARK: - Life Cycle
 
-//    func configureView() {
-        // Update the user interface for the detail item.
-//        if let detail = detailItem {
-//            if let label = detailDescriptionLabel {
-//                label.text = detail.timestamp!.description
-//            }
-//        }
-//    }
+    override func viewDidLoad() {
+        super.viewDidLoad()
+        // Do any additional setup after loading the view.
+       configureView()
+    }
 
-    func configureView() {
+    // MARK: - Private Methods
+
+    private func configureView() {
         // Update the user interface for the detail item.
         title = ""
         self.articleAuthor.text = articleData?.author
@@ -41,32 +46,25 @@ class DetailViewController: UIViewController {
                 }
             }
         } else {
-            self.articleImage.image = UIImage(named: "NoImage")
+            self.articleImage.image = UIImage(named: "no-image")
         }
     }
 
-    override func viewDidLoad() {
-        super.viewDidLoad()
-        // Do any additional setup after loading the view.
-       configureView()
-    }
-
-    @IBAction func saveImage(_ sender: Any) {
+    @objc private func saveImage(_ sender: Any) {
         UIImageWriteToSavedPhotosAlbum(self.articleImage.image!, self, #selector(image(_:didFinishSavingWithError:contextInfo:)), nil)
     }
 
-    @objc func image(_ image: UIImage, didFinishSavingWithError error: NSError?, contextInfo: UnsafeRawPointer) {
+    @objc private func image(_ image: UIImage, didFinishSavingWithError error: NSError?, contextInfo: UnsafeRawPointer) {
         if let error = error {
             // we got back an error!
             let ac = UIAlertController(title: NSLocalizedString("Error", comment: ""), message: error.localizedDescription, preferredStyle: .alert)
             ac.addAction(UIAlertAction(title: NSLocalizedString("OK", comment: ""), style: .default))
             present(ac, animated: true)
         } else {
-            let ac = UIAlertController(title: NSLocalizedString("Saved!", comment: ""), message: NSLocalizedString("The screenshot has been saved to your photos.", comment: ""), preferredStyle: .alert)
+            let ac = UIAlertController(title: NSLocalizedString("Saved!", comment: ""), message: NSLocalizedString("The image was saved to your photo gallery.", comment: ""), preferredStyle: .alert)
             ac.addAction(UIAlertAction(title: NSLocalizedString("OK", comment: ""), style: .default))
             present(ac, animated: true)
         }
     }
-
 }
 

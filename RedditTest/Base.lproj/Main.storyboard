@@ -1,6 +1,6 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <document type="com.apple.InterfaceBuilder3.CocoaTouch.Storyboard.XIB" version="3.0" toolsVersion="15705" targetRuntime="iOS.CocoaTouch" propertyAccessControl="none" useAutolayout="YES" useTraitCollections="YES" useSafeAreas="YES" colorMatched="YES" initialViewController="H1p-Uh-vWS">
-    <device id="ipad9_7" orientation="portrait" layout="fullscreen" appearance="light"/>
+    <device id="ipad9_7" orientation="portrait" layout="fullscreen" appearance="dark"/>
     <dependencies>
         <plugIn identifier="com.apple.InterfaceBuilder.IBCocoaTouchPlugin" version="15706"/>
         <capability name="Safe area layout guides" minToolsVersion="9.0"/>
@@ -35,13 +35,14 @@
                                 <rect key="frame" x="0.0" y="59" width="768" height="956"/>
                                 <subviews>
                                     <label opaque="NO" userInteractionEnabled="NO" contentMode="left" horizontalHuggingPriority="251" verticalHuggingPriority="251" text="Label" textAlignment="natural" lineBreakMode="tailTruncation" baselineAdjustment="alignBaselines" adjustsFontSizeToFit="NO" translatesAutoresizingMaskIntoConstraints="NO" id="7nQ-Va-0JU">
-                                        <rect key="frame" x="16" y="16" width="736" height="21"/>
-                                        <fontDescription key="fontDescription" type="system" pointSize="17"/>
+                                        <rect key="frame" x="16" y="16" width="736" height="24"/>
+                                        <fontDescription key="fontDescription" type="system" weight="medium" pointSize="20"/>
                                         <nil key="textColor"/>
                                         <nil key="highlightedColor"/>
                                     </label>
-                                    <imageView clipsSubviews="YES" userInteractionEnabled="NO" contentMode="scaleAspectFit" horizontalHuggingPriority="251" verticalHuggingPriority="251" translatesAutoresizingMaskIntoConstraints="NO" id="QnH-9T-kX2">
-                                        <rect key="frame" x="16" y="53" width="736" height="736"/>
+                                    <imageView clipsSubviews="YES" contentMode="scaleAspectFit" horizontalHuggingPriority="251" verticalHuggingPriority="251" image="no-image" translatesAutoresizingMaskIntoConstraints="NO" id="QnH-9T-kX2">
+                                        <rect key="frame" x="16" y="56" width="736" height="736"/>
+                                        <gestureRecognizers/>
                                         <constraints>
                                             <constraint firstAttribute="width" secondItem="QnH-9T-kX2" secondAttribute="height" id="1mH-O8-I5T"/>
                                             <constraint firstAttribute="height" constant="300" id="L0V-O4-WSz">
@@ -73,8 +74,8 @@
                                             </mask>
                                         </variation>
                                     </imageView>
-                                    <label clipsSubviews="YES" userInteractionEnabled="NO" contentMode="scaleToFill" text="Detail view content goes here" textAlignment="center" lineBreakMode="tailTruncation" minimumFontSize="10" translatesAutoresizingMaskIntoConstraints="NO" id="0XM-y9-sOw">
-                                        <rect key="frame" x="14" y="813" width="738" height="21"/>
+                                    <label clipsSubviews="YES" userInteractionEnabled="NO" contentMode="scaleToFill" text="Detail view content goes here" textAlignment="center" lineBreakMode="tailTruncation" numberOfLines="0" translatesAutoresizingMaskIntoConstraints="NO" id="0XM-y9-sOw">
+                                        <rect key="frame" x="14" y="816" width="738" height="20.5"/>
                                         <color key="backgroundColor" systemColor="systemBackgroundColor" cocoaTouchSystemColor="whiteColor"/>
                                         <fontDescription key="fontDescription" type="system" pointSize="17"/>
                                         <nil key="highlightedColor"/>
@@ -91,7 +92,7 @@
                                     <constraint firstItem="QnH-9T-kX2" firstAttribute="top" secondItem="7nQ-Va-0JU" secondAttribute="bottom" constant="16" id="YhN-ZT-kSm"/>
                                     <constraint firstItem="7nQ-Va-0JU" firstAttribute="leading" secondItem="h6z-tR-S0E" secondAttribute="leading" constant="16" id="b0Z-ym-QqB"/>
                                     <constraint firstAttribute="trailing" secondItem="QnH-9T-kX2" secondAttribute="trailing" constant="16" id="bGy-gl-e1D"/>
-                                    <constraint firstAttribute="bottom" secondItem="0XM-y9-sOw" secondAttribute="bottom" constant="24" id="lrF-Zz-0Cs"/>
+                                    <constraint firstAttribute="bottom" secondItem="0XM-y9-sOw" secondAttribute="bottom" priority="750" constant="24" id="lrF-Zz-0Cs"/>
                                 </constraints>
                             </scrollView>
                         </subviews>
@@ -189,6 +190,9 @@
             <point key="canvasLocation" x="-45" y="129"/>
         </scene>
     </scenes>
+    <resources>
+        <image name="no-image" width="500" height="500"/>
+    </resources>
     <inferredMetricsTieBreakers>
         <segue reference="6S0-TO-JiA"/>
     </inferredMetricsTieBreakers>

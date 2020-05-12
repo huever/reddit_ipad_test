@@ -8,7 +8,13 @@
 
 import UIKit
 
+protocol DetailCellDelegate: class {
+    func detailCellTapOnDismissButton(cell: DetailCell)
+}
+
 class DetailCell: UITableViewCell {
+
+    static var preferredHeight: CGFloat = 160
 
     // MARK: Outlets
 
@@ -17,22 +23,49 @@ class DetailCell: UITableViewCell {
     @IBOutlet weak var comments: UILabel!
     @IBOutlet weak var author: UILabel!
     @IBOutlet weak var articleImage: UIImageView!
+    @IBOutlet weak var dismissArticle: UIButton! {
+        didSet {
+            dismissArticle.titleLabel?.text = NSLocalizedString("Dismiss", comment: "Dismiss Article")
+            dismissArticle.isUserInteractionEnabled = true
+        }
+    }
+    @IBOutlet weak var articleViewed: UIView! {
+        didSet {
+            articleViewed.backgroundColor = .red
+        }
+    }
+
+    @IBAction func dismissArticle(_ sender: Any) {
+        self.delegate?.detailCellTapOnDismissButton(cell: self)
+    }
 
     // MARK: ViewData
 
     public struct ViewData {
-        let title: String?
-        let date: String?
-        let numberOfComments: String?
+        let id: String
+        let title: String
+        let date: String
+        let numberOfComments: String
         let author: String?
         let imageUrl: String?
 
-        public init(title: String?, date: String?, numberOfComments: String?, author: String?, imageUrl: String?) {
+        public init(id: String, title: String, date: String, numberOfComments: String, author: String?, imageUrl: String?) {
+            self.id = id
             self.title = title
             self.date = date
             self.numberOfComments = numberOfComments
             self.author = author
             self.imageUrl = imageUrl
+        }
+    }
+
+    var selectedCell: Bool? = false {
+        didSet {
+            if selectedCell == true {
+                articleViewed.backgroundColor = .clear
+            } else {
+                articleViewed.backgroundColor = .red
+            }
         }
     }
 
@@ -46,22 +79,23 @@ class DetailCell: UITableViewCell {
             self.author.text = viewData.author
 
             if let imageUrl = viewData.imageUrl {
-                    Networking().loadImage(image: imageUrl) { image in
-                        DispatchQueue.main.async {
-                            self.articleImage.image = image
-                        }
+                Networking().loadImage(image: imageUrl) { image in
+                    DispatchQueue.main.async {
+                        self.articleImage.image = image
                     }
+                }
             } else {
                 articleImage.image = UIImage(named: "NoImage")
             }
         }
     }
 
+    public weak var delegate: DetailCellDelegate?
+
     // MARK: LifeCycle
 
-    override func setSelected(_ selected: Bool, animated: Bool) {
-        super.setSelected(selected, animated: animated)
-
-        // Configure the view for the selected state
+    override func prepareForReuse() {
+        super.prepareForReuse()
+        articleViewed.backgroundColor = .red
     }
 }
