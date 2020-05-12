@@ -49,7 +49,7 @@ class MasterViewController: UITableViewController {
 
         let refreshControl = UIRefreshControl()
         refreshControl.addTarget(self, action: #selector(self.handleRefresh(_:)), for: UIControl.Event.valueChanged)
-        refreshControl.tintColor = .white
+        refreshControl.tintColor = .orange
 
         tableView.addSubview(refreshControl)
     }
